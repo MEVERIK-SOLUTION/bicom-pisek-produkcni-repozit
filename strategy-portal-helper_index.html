@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="cs" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bicom Písek – Strategický a Technologický Portál</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Cormorant Garamond', 'serif'],
+                        sans: ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        alabaster: {
+                            50: '#FDFCFB',
+                            100: '#FAF8F5',
+                            200: '#F3EFEA',
+                            300: '#E6DFD5',
+                            400: '#DDD5C7',
+                        },
+                        sage: {
+                            100: '#EAEFEA',
+                            200: '#D5DFD5',
+                            500: '#738A75',
+                            600: '#5F7361',
+                            750: '#465647',
+                            900: '#2A342B',
+                        },
+                        gold: {
+                            100: '#F4EFEA',
+                            200: '#E3D3C4',
+                            500: '#C5A880',
+                            600: '#B2946C',
+                        },
+                        charcoal: {
+                            800: '#3D3A38',
+                            900: '#2E2B2A',
+                            950: '#1C1A19',
+                        }
+                    },
+                    boxShadow: {
+                        'premium': '0 20px 50px -12px rgba(115, 138, 117, 0.08)',
+                        'gold-glow': '0 10px 30px -5px rgba(197, 168, 128, 0.12)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #FAF8F5;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 350px;
+        }
+        .page-transition {
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .tab-active {
+            color: #738A75;
+            border-bottom: 2px solid #738A75;
+            font-weight: 600;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FAF8F5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D5DFD5;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #738A75;
+        }
+    </style>
+</head>
+<body class="text-charcoal-800 antialiased selection:bg-sage-500 selection:text-white">
+
+    <div id="toast" class="fixed top-6 right-6 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-500 bg-charcoal-950 text-alabaster-50 border border-gold-500/30 px-6 py-4 rounded-2xl shadow-premium flex items-center gap-3">
+        <span class="text-gold-500 text-lg">✦</span>
+        <span id="toast-text" class="text-xs tracking-wider uppercase font-medium">Akce úspěšně dokončena</span>
+    </div>
+
+    <nav class="sticky top-0 z-40 bg-alabaster-100/90 backdrop-blur-md border-b border-alabaster-300/40">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex justify-between items-center h-24">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-sage-500 rounded-full flex items-center justify-center text-alabaster-50 shadow-md">
+                        <span class="text-2xl font-serif">🌿</span>
+                    </div>
+                    <div>
+                        <span class="font-serif font-bold text-2xl tracking-tight text-charcoal-950 block">Meverik <span class="italic font-light text-sage-500">Studio</span></span>
+                        <span class="text-[9px] tracking-widest text-gold-600 uppercase block -mt-1 font-semibold">Projekty 2026 &bull; Bicom Písek</span>
+                    </div>
+                </div>
+                
+                <div class="hidden lg:flex items-center space-x-8">
+                    <button onclick="switchTab('concept')" class="tab-link py-2 text-xs font-medium uppercase tracking-widest text-charcoal-800 hover:text-sage-500 transition tab-active" id="tab-concept">Vize &amp; Segmenty</button>
+                    <button onclick="switchTab('data')" class="tab-link py-2 text-xs font-medium uppercase tracking-widest text-charcoal-800 hover:text-sage-500 transition" id="tab-data">Regionální Data</button>
+                    <button onclick="switchTab('competitors')" class="tab-link py-2 text-xs font-medium uppercase tracking-widest text-charcoal-800 hover:text-sage-500 transition" id="tab-competitors">Trh &amp; Konkurence</button>
+                    <button onclick="switchTab('psychology')" class="tab-link py-2 text-xs font-medium uppercase tracking-widest text-charcoal-800 hover:text-sage-500 transition" id="tab-psychology">Sémantika &amp; UX</button>
+                    <button onclick="switchTab('architecture')" class="tab-link py-2 text-xs font-medium uppercase tracking-widest text-charcoal-800 hover:text-sage-500 transition" id="tab-architecture">Architektura</button>
+                    <button onclick="switchTab('simulator')" class="tab-link py-2 text-xs font-medium uppercase tracking-widest text-charcoal-800 hover:text-sage-500 transition" id="tab-simulator">AI Simulátor</button>
+                </div>
+
+                <div class="lg:hidden">
+                    <select onchange="switchTab(this.value)" class="bg-alabaster-200 border border-alabaster-300 rounded-full px-4 py-2 text-xs font-medium uppercase tracking-widest text-charcoal-800 focus:outline-none">
+                        <option value="concept">Vize &amp; Segmenty</option>
+                        <option value="data">Regionální Data</option>
+                        <option value="competitors">Trh &amp; Konkurence</option>
+                        <option value="psychology">Sémantika &amp; UX</option>
+                        <option value="architecture">Architektura</option>
+                        <option value="simulator">AI Simulátor</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="relative bg-alabaster-200 border-b border-alabaster-300/60 py-20 overflow-hidden">
+        <div class="absolute inset-0 opacity-5 bg-[radial-gradient(#738a75_1px,transparent_1px)] [background-size:16px_16px]"></div>
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+            <div class="max-w-3xl">
+                <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sage-100 border border-sage-200/50 text-sage-700 text-[10px] font-bold tracking-widest uppercase mb-6">
+                    <span class="text-sm">📑</span> Analyticko-Strategický Portál
+                </span>
+                <h1 class="font-serif text-5xl md:text-7xl font-light text-charcoal-950 leading-[1.1] mb-6">
+                    Ekosystém <br><span class="italic font-normal text-sage-500">BiCOM PiSEK</span>
+                </h1>
+                <p class="text-base md:text-lg text-charcoal-800 font-light leading-relaxed mb-8">
+                    Komplexní vizualizace hloubkových rešerší Písecka, nákupního chování, tržních mezer a technologické Cloudflare Edge architektury. Tento portál slouží jako centrální "Single Source of Truth" pro vývoj a marketingové plánování paní Lenky Limpouchové.
+                </p>
+                <div class="flex flex-wrap gap-4 text-xs font-semibold uppercase tracking-widest text-gold-600">
+                    <span class="bg-alabaster-100 border border-alabaster-300 px-4 py-2 rounded-full">Cloudflare First</span>
+                    <span class="bg-alabaster-100 border border-alabaster-300 px-4 py-2 rounded-full">Data-Driven UX</span>
+                    <span class="bg-alabaster-100 border border-alabaster-300 px-4 py-2 rounded-full">AIO Ready</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+
+        <div id="page-concept" class="page-transition block">
+            <div class="text-left max-w-3xl mb-12">
+                <h2 class="font-serif text-3xl md:text-4xl font-light text-charcoal-950 mb-4">Vize, Manifest a Cílové Skupiny</h2>
+                <p class="text-sm text-charcoal-800 leading-relaxed font-light">
+                    Opuštění klinické chladnosti. Nový portál je koncipován v estetice "Quiet Luxury", která reflektuje potřebu bezpečí a profesionality, tolik žádanou primární cílovou skupinou.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div class="bg-alabaster-50 rounded-3xl p-8 border border-alabaster-300/30 shadow-premium flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-sage-500 block mb-2">Filozofie Designu</span>
+                        <h3 class="font-serif text-2xl font-light text-charcoal-950 mb-4">Quiet Luxury (Tichý luxus)</h3>
+                        <p class="text-xs text-charcoal-800 leading-relaxed font-light mb-6">
+                            Vizuální harmonie jako nástroj pro snížení stresu. Web využívá jemné smetanové a šalvějové tóny, velkorysý bílý prostor a patkovou typografii Cormorant Garamond. Tento přístup prokazatelně snižuje nákupní bariéry u žen hledajících psychosomatickou péči.
+                        </p>
+                    </div>
+                    <div class="border-t border-alabaster-200 pt-4 flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-gold-600">
+                        <span>Alabaster &bull; Sage &bull; Gold</span>
+                        <span>Důvěra &amp; Diskrétnost</span>
+                    </div>
+                </div>
+
+                <div class="bg-alabaster-50 rounded-3xl p-8 border border-alabaster-300/30 shadow-premium flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-sage-500 block mb-2">Technologická Vize</span>
+                        <h3 class="font-serif text-2xl font-light text-charcoal-950 mb-4">Zero-Cost Serverless</h3>
+                        <p class="text-xs text-charcoal-800 leading-relaxed font-light mb-6">
+                            Architektura Meverik Studio 2026. Minimalizace měsíčních nákladů pro klientku využitím sítě Cloudflare (Pages, Workers, D1 databáze). Všechna citlivá data o zdraví jsou šifrována pomocí AES-GCM (Web Crypto API) přímo na okraji sítě (Edge).
+                        </p>
+                    </div>
+                    <div class="border-t border-alabaster-200 pt-4 flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-gold-600">
+                        <span>Cloudflare D1 &amp; R2</span>
+                        <span>GDPR Compliant</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-8 md:p-12 border border-alabaster-300/40 shadow-premium mb-12">
+                <h3 class="font-serif text-2xl md:text-3xl font-light text-charcoal-950 mb-6 text-center">Kompozice Cílových Skupin</h3>
+                <p class="text-xs text-charcoal-800 leading-relaxed font-light text-center max-w-2xl mx-auto mb-10">
+                    Rozložení definované na základě demografických rešerší Písecka. Každý segment má v AIO sémantice dedikovanou vlastní komunikační cestu a slovník.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-alabaster-100 p-6 rounded-2xl border border-alabaster-200">
+                        <div class="text-3xl font-bold text-sage-500 mb-2">60%</div>
+                        <h4 class="font-serif text-lg font-bold text-charcoal-950 mb-2">Ženy 35-55 let</h4>
+                        <p class="text-[11px] text-charcoal-800 font-light leading-relaxed">Řešení stresu, psychosomatiky, syndromu vyhoření a hormonální rovnováhy. Hledají "přírodní cestu" a vnitřní klid.</p>
+                    </div>
+                    <div class="bg-alabaster-100 p-6 rounded-2xl border border-alabaster-200">
+                        <div class="text-3xl font-bold text-sage-500 mb-2">20%</div>
+                        <h4 class="font-serif text-lg font-bold text-charcoal-950 mb-2">Matky s dětmi</h4>
+                        <p class="text-[11px] text-charcoal-800 font-light leading-relaxed">Frustrované z kortikoidů. Hledají šetrné, bezbolestné testování alergenů a ekzémů (ABKM, lepek, pyly) pro své děti.</p>
+                    </div>
+                    <div class="bg-alabaster-100 p-6 rounded-2xl border border-alabaster-200">
+                        <div class="text-3xl font-bold text-sage-500 mb-2">15%</div>
+                        <h4 class="font-serif text-lg font-bold text-charcoal-950 mb-2">Muži &amp; Kuřáci</h4>
+                        <p class="text-[11px] text-charcoal-800 font-light leading-relaxed">Pracující v průmyslu. Pragmatické odvykání kouření bez absťáku a řešení fyzických chronických bolestí zad.</p>
+                    </div>
+                    <div class="bg-alabaster-100 p-6 rounded-2xl border border-alabaster-200">
+                        <div class="text-3xl font-bold text-sage-500 mb-2">5%</div>
+                        <h4 class="font-serif text-lg font-bold text-charcoal-950 mb-2">Biohackeři</h4>
+                        <p class="text-[11px] text-charcoal-800 font-light leading-relaxed">Fokus na výkon a prevenci. Hloubková detoxikace těžkých kovů, parazitů a odblokování buněčné energie.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-data" class="page-transition hidden">
+            <div class="text-left max-w-3xl mb-12">
+                <h2 class="font-serif text-3xl md:text-4xl font-light text-charcoal-950 mb-4">Lokální epidemiologická &amp; demografická data</h2>
+                <p class="text-sm text-charcoal-800 leading-relaxed font-light">
+                    Transformace surových dat z ČSÚ a ÚZIS do strategických vizualizací. Tyto indikátory definují obsahové priority webu a geografické cílení výkonnostního marketingu (okruh 30 km).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white rounded-3xl p-8 border border-alabaster-300/40 shadow-premium">
+                    <h3 class="font-serif text-xl font-bold text-charcoal-950 mb-2">Populační uzly spádové oblasti (v tis.)</h3>
+                    <p class="text-[11px] text-charcoal-800 font-light mb-6">
+                        Primární a sekundární trhy. Celkový teoretický zásah regionu přesahuje 100 000 obyvatel s Pískem a Strakonicemi jako hlavními póly.
+                    </p>
+                    <div class="chart-container">
+                        <canvas id="geoChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-3xl p-8 border border-alabaster-300/40 shadow-premium">
+                    <h3 class="font-serif text-xl font-bold text-charcoal-950 mb-2">Industrializace: Velcí zaměstnavatelé v regionu</h3>
+                    <p class="text-[11px] text-charcoal-800 font-light mb-6">
+                        Zaměstnanci těchto podniků čelí směnnému provozu, fyzické zátěži a chronické únavě. Klíčový cíl pro programy zaměřené na bolesti zad a odvykání.
+                    </p>
+                    <div class="chart-container">
+                        <canvas id="industryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <div class="bg-white rounded-3xl p-8 border border-alabaster-300/40 shadow-premium">
+                    <h3 class="font-serif text-xl font-bold text-charcoal-950 mb-2">Transice užívání nikotinu u mládeže (15-24 let)</h3>
+                    <p class="text-[11px] text-charcoal-800 font-light mb-6">
+                        Data NAUTA odhalují kritický přesun k alternativám. Antinikotinový program Bicom musí být textově připraven i na závislosti z vapingu a sáčků.
+                    </p>
+                    <div class="chart-container">
+                        <canvas id="nicotineChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-3xl p-8 border border-alabaster-300/40 shadow-premium">
+                    <h3 class="font-serif text-xl font-bold text-charcoal-950 mb-2">Průměrná doba dočasné pracovní neschopnosti</h3>
+                    <p class="text-[11px] text-charcoal-800 font-light mb-6">
+                        Závažnost chronických a duševních onemocnění se v kraji propisuje do extrémní délky DPN. Bicom nabízí rychlejší cestu k rekonvalescenci.
+                    </p>
+                    <div class="chart-container">
+                        <canvas id="sicknessChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-alabaster-50 rounded-3xl p-8 border border-alabaster-300/30 shadow-premium mb-12">
+                <h3 class="font-serif text-2xl font-light text-charcoal-950 mb-6 text-center">Makro-ukazatele pro copywriting a SEO</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                    <div class="bg-white p-6 rounded-2xl border border-alabaster-200">
+                        <div class="text-4xl font-serif text-gold-500 mb-2">71%</div>
+                        <h4 class="font-serif text-lg font-bold text-charcoal-950 mb-2">Ohrožení vyhořením</h4>
+                        <p class="text-[11px] text-charcoal-800 font-light">Podíl české populace zažívající silný stres a vyčerpání. Argumentační základ pro psychosomatické a relaxační programy.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-alabaster-200">
+                        <div class="text-4xl font-serif text-gold-500 mb-2">44.0</div>
+                        <h4 class="font-serif text-lg font-bold text-charcoal-950 mb-2">Dní na DPN</h4>
+                        <p class="text-[11px] text-charcoal-800 font-light">Průměrná délka jedné pracovní neschopnosti v Jihočeském kraji. Důkaz potřeby efektivnější a celostnější diagnostiky blokád.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-alabaster-200">
+                        <div class="text-4xl font-serif text-gold-500 mb-2">25-30%</div>
+                        <h4 class="font-serif text-lg font-bold text-charcoal-950 mb-2">Dětí s alergiemi</h4>
+                        <p class="text-[11px] text-charcoal-800 font-light">Incidence atopie a alergií u dětské populace. Zásadní spouštěč pro matky hledající bezbolestné frekvenční řešení mimo klasické testy.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-competitors" class="page-transition hidden">
+            <div class="text-left max-w-3xl mb-12">
+                <h2 class="font-serif text-3xl md:text-4xl font-light text-charcoal-950 mb-4">Konkurenční mapa a Tržní příležitosti</h2>
+                <p class="text-sm text-charcoal-800 leading-relaxed font-light">
+                    Analýza 5 stěžejních pracovišť s přístrojem Bicom v okruhu 50 km odhalila kritické slabiny konkurentů v digitální prezentaci, cenové transparentnosti a online odbavení.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 border border-alabaster-300/40 shadow-premium mb-8 overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[700px]">
+                    <thead>
+                        <tr class="border-b border-alabaster-300 text-[10px] uppercase tracking-wider text-stone-400">
+                            <th class="pb-3 font-medium">Pracoviště / Vzdálenost</th>
+                            <th class="pb-3 font-medium">Profilace</th>
+                            <th class="pb-3 font-medium">Slabina a Omezení</th>
+                            <th class="pb-3 font-medium text-right">Míra Hrozby</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs divide-y divide-alabaster-100">
+                        <tr>
+                            <td class="py-4 font-bold text-charcoal-950">Bc. Jana Chválová <br><span class="text-[10px] text-stone-400 font-normal">Písek (0 km)</span></td>
+                            <td class="py-4 text-charcoal-800">Rehabilitace + Biorezonance</td>
+                            <td class="py-4 text-charcoal-800 font-light">Neuvedené ceny. Chybí online rezervační modul. Zastaralý web design.</td>
+                            <td class="py-4 text-right"><span class="bg-rose-100 text-rose-800 text-[9px] font-bold px-3 py-1 rounded-full">Vysoká (Lokalita)</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 font-bold text-charcoal-950">Salon Karolína <br><span class="text-[10px] text-stone-400 font-normal">Písek (0 km)</span></td>
+                            <td class="py-4 text-charcoal-800">Kosmetika + Hubnutí</td>
+                            <td class="py-4 text-charcoal-800 font-light">Bicom slouží jen jako doplněk. Ztráta lékařské a odborné důvěryhodnosti.</td>
+                            <td class="py-4 text-right"><span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-3 py-1 rounded-full">Střední</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 font-bold text-charcoal-950">Biorezonance Dieko <br><span class="text-[10px] text-stone-400 font-normal">Strakonice (29 km)</span></td>
+                            <td class="py-4 text-charcoal-800">Bicom + Kapky Energy</td>
+                            <td class="py-4 text-charcoal-800 font-light">Nulový digitální marketing. Blog od r. 2019 neaktualizován. Není ceník.</td>
+                            <td class="py-4 text-right"><span class="bg-amber-100 text-amber-800 text-[9px] font-bold px-3 py-1 rounded-full">Střední</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 font-bold text-charcoal-950">MEDrezona <br><span class="text-[10px] text-stone-400 font-normal">Hluboká n. Vlt. (40 km)</span></td>
+                            <td class="py-4 text-charcoal-800">Komplexní celostní detox</td>
+                            <td class="py-4 text-charcoal-800 font-light">Ceny dostupné pouze po telefonickém vyžádání (tvorba nedůvěry).</td>
+                            <td class="py-4 text-right"><span class="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-3 py-1 rounded-full">Nízká (Vzdálenost)</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 font-bold text-charcoal-950">MUDr. Michaela Šimková <br><span class="text-[10px] text-stone-400 font-normal">Č. Budějovice (50 km)</span></td>
+                            <td class="py-4 text-charcoal-800">Lékařská celostní péče</td>
+                            <td class="py-4 text-charcoal-800 font-light">Pouze osobní / telefonické objednávání. Přebujelá textace na webu.</td>
+                            <td class="py-4 text-right"><span class="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-3 py-1 rounded-full">Nízká</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div class="bg-alabaster-50 p-8 rounded-3xl border border-alabaster-300/30 shadow-premium flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-gold-500 block mb-2">Taktická výhoda</span>
+                        <h3 class="font-serif text-xl font-bold text-charcoal-950 mb-6">Základní pilíře pro penetraci trhu (SWOT)</h3>
+                        <div class="space-y-4 text-xs text-charcoal-800 font-light">
+                            <p class="flex items-start gap-3">
+                                <span class="text-sage-500 font-bold text-sm">✦</span>
+                                <span><strong>Online rezervace bez bariér:</strong> Okamžité uspokojení potřeby. Matka dítěte s nočním svěděním ekzému se může objednat ve 3 ráno bez čekání na otevírací dobu.</span>
+                            </p>
+                            <p class="flex items-start gap-3">
+                                <span class="text-sage-500 font-bold text-sm">✦</span>
+                                <span><strong>Absolutní transparentnost cen:</strong> Odstranění "strachu z neznáma", který brzdí konverze u konkurence (MEDrezona, Dieko).</span>
+                            </p>
+                            <p class="flex items-start gap-3">
+                                <span class="text-sage-500 font-bold text-sm">✦</span>
+                                <span><strong>Profesionální, nikoliv "Ezo" profilace:</strong> Odklon od vibrací drahých kamenů a kosmetiky (Salon Karolína). Striktní zaměření na biofyziku a měřitelné výsledky Bicom Optima.</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-alabaster-50 p-8 rounded-3xl border border-alabaster-300/30 shadow-premium flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-gold-500 block mb-2">Synergický networking</span>
+                        <h3 class="font-serif text-xl font-bold text-charcoal-950 mb-6">Mapa lokálních partnerů (Křížové reference)</h3>
+                        <p class="text-xs text-charcoal-800 leading-relaxed font-light mb-6">
+                            Místo konkurování dalším alternativním terapeutům vytvoříme síť doporučení, čímž zvýšíme lokální autoritu (E-E-A-T parametr).
+                        </p>
+                        <div class="grid grid-cols-2 gap-4 text-[10px] text-charcoal-950 uppercase font-bold tracking-wider text-center">
+                            <div class="bg-white p-3 rounded-xl border border-alabaster-200">
+                                Ing. B. Pallanová<br><span class="text-[9px] text-sage-600 font-normal normal-case">Celostní kouč, Písek</span>
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-alabaster-200">
+                                MUDr. E. Benc ml.<br><span class="text-[9px] text-sage-600 font-normal normal-case">Akupunktura, Písek</span>
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-alabaster-200">
+                                MUDr. V. Koutenská<br><span class="text-[9px] text-sage-600 font-normal normal-case">Psychosomatika, Tábor</span>
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-alabaster-200">
+                                H. Božková<br><span class="text-[9px] text-sage-600 font-normal normal-case">Kraniosakrální b., Písek</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-psychology" class="page-transition hidden">
+            <div class="text-left max-w-3xl mb-12">
+                <h2 class="font-serif text-3xl md:text-4xl font-light text-charcoal-950 mb-4">Sémantika, Nákupní psychologie &amp; UX</h2>
+                <p class="text-sm text-charcoal-800 leading-relaxed font-light">
+                    Transformace lékařské latiny do jazyka matek a klientů na pokraji vyhoření. Znalost jejich obav a komunikačních vzorců je kritická pro GEO (Generative Engine Optimization) úspěch.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl p-8 border border-alabaster-300/40 shadow-premium mb-8">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-gold-500 block mb-2 text-center">Modrý Koník &amp; eMimino rešerše</span>
+                <h3 class="font-serif text-2xl font-light text-charcoal-950 mb-8 text-center">Slovník matek s atopickými dětmi (Data-Driven Copywriting)</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-alabaster-100 p-6 rounded-2xl border border-alabaster-200">
+                        <h4 class="font-bold text-charcoal-950 text-sm mb-2">Vizuální projevy</h4>
+                        <p class="text-[11px] text-sage-600 font-bold mb-2">"zarudlé suché fleky", "mokvavé boláky pod kolínky"</p>
+                        <p class="text-[10px] text-charcoal-800 font-light leading-relaxed">Nahrazuje sterilní pojem: "Atopická dermatitida s exsudací". Zvyšuje autenticitu textu.</p>
+                    </div>
+                    <div class="bg-alabaster-100 p-6 rounded-2xl border border-alabaster-200">
+                        <h4 class="font-bold text-charcoal-950 text-sm mb-2">Zoufalství a svědění</h4>
+                        <p class="text-[11px] text-sage-600 font-bold mb-2">"neustálé drbání", "rozdírá se do krve", "pláče vzteky"</p>
+                        <p class="text-[10px] text-charcoal-800 font-light leading-relaxed">Vyjadřuje emocionální vyčerpání a spánkový dluh matky, nikoliv jen medicínský problém "pruritus".</p>
+                    </div>
+                    <div class="bg-alabaster-100 p-6 rounded-2xl border border-alabaster-200">
+                        <h4 class="font-bold text-charcoal-950 text-sm mb-2">Rezistence k lékům</h4>
+                        <p class="text-[11px] text-sage-600 font-bold mb-2">"kortikoidy NIKDY", "chemické masti", "jen to tlumí"</p>
+                        <p class="text-[10px] text-charcoal-800 font-light leading-relaxed">Identifikovaný odpor k alopatické medicíně otevírá prostor pro naši biofyzikální terapii.</p>
+                    </div>
+                    <div class="bg-alabaster-100 p-6 rounded-2xl border border-alabaster-200">
+                        <h4 class="font-bold text-charcoal-950 text-sm mb-2">Samoléčba</h4>
+                        <p class="text-[11px] text-sage-600 font-bold mb-2">"ovesné koupele", "AIP protokol", "zinková mast"</p>
+                        <p class="text-[10px] text-charcoal-800 font-light leading-relaxed">Před návštěvou Bicomu mají klientky již obrovskou samo-edukační bázi. Komunikace nesmí být povýšená.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div class="bg-alabaster-50 p-8 rounded-3xl border border-alabaster-300/30 shadow-premium flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-gold-500 block mb-2">Fáze rozhodování</span>
+                        <h3 class="font-serif text-xl font-bold text-charcoal-950 mb-6">Rozbíjení nákupních bariér</h3>
+                        <div class="space-y-5 text-xs text-charcoal-800">
+                            <div>
+                                <h4 class="font-bold mb-1 text-sage-700">1. Finanční "bezedná díra"</h4>
+                                <p class="font-light leading-relaxed">Klientky se bojí, že je budeme nutit chodit roky a platit kapky. Řešení: Implementace jasně ohraničených balíčků (např. 3 sezení pro pylovou rýmu).</p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold mb-1 text-sage-700">2. Dietní panika po diagnostice</h4>
+                                <p class="font-light leading-relaxed">Zděšení z odhalení desítek potravinových intolerancí najednou. Řešení: Garance postupné péče a pomoci s návrhy receptů (nejsou na to samy).</p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold mb-1 text-sage-700">3. Strach ze "zásahu proudem"</h4>
+                                <p class="font-light leading-relaxed">Neznalost technologie vzbuzuje obavy. Řešení: Explicitní ujištění "absolutně bezbolestné, bezpečné vlnění tělesného typu, vhodné i pro malé děti".</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-alabaster-50 p-8 rounded-3xl border border-alabaster-300/30 shadow-premium flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-gold-500 block mb-2">Doporučení pro autoritu</span>
+                        <h3 class="font-serif text-xl font-bold text-charcoal-950 mb-6">Zamezení skepticismu (Komplementární role)</h3>
+                        <p class="text-xs text-charcoal-800 leading-relaxed font-light mb-6">
+                            Nebudeme se na webu přít s klasickými alergology a lékaři. Tento boj vyvolává u racionálnějších klientek skepticism. Zvolíme narativ doplňku.
+                        </p>
+                        <div class="space-y-4 text-xs text-charcoal-800">
+                            <p class="flex gap-3 items-start">
+                                <span class="text-sage-500 font-bold text-sm">✦</span>
+                                <span><strong>Vyhledávání příčin, ne popírání diagnóz:</strong> Neříkáme "váš lékař se mýlí", říkáme "my se podíváme, proč tělo reaguje tvorbou ekzému".</span>
+                            </p>
+                            <p class="flex gap-3 items-start">
+                                <span class="text-sage-500 font-bold text-sm">✦</span>
+                                <span><strong>Příprava na "Reverzní Reakci":</strong> Edukujeme o přechodné únavě po detoxikaci Bicomem. Tím únavu neprezentují jako selhání metody, ale jako důkaz funkčnosti.</span>
+                            </p>
+                            <p class="flex gap-3 items-start">
+                                <span class="text-sage-500 font-bold text-sm">✦</span>
+                                <span><strong>Lidská tvář vs. Přístroj:</strong> Klientky platí za empatii, čas a vyslechnutí paní Lenkou. Přístroj je "jen" nástroj, který pomáhá její vizi.</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-architecture" class="page-transition hidden">
+            <div class="text-left max-w-3xl mb-12">
+                <h2 class="font-serif text-3xl md:text-4xl font-light text-charcoal-950 mb-4">Cloudflare Edge Grid &amp; Architektura</h2>
+                <p class="text-sm text-charcoal-800 leading-relaxed font-light">
+                    Serverless infrastruktura zajišťující absolutní stabilitu, bezpečné zpracování údajů o zdraví a propojení s nástroji třetích stran (Google Workspace, Meta API).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                <div class="lg:col-span-2 bg-white rounded-3xl p-8 border border-alabaster-300/40 shadow-premium">
+                    <h3 class="font-serif text-xl font-bold text-charcoal-950 mb-6">Datové toky v ekosystému</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 bg-alabaster-50 p-4 rounded-2xl border border-alabaster-200">
+                            <div class="w-10 h-10 flex-shrink-0 bg-white rounded-full border border-alabaster-300 flex items-center justify-center text-lg">📱</div>
+                            <div class="flex-1">
+                                <h4 class="text-xs font-bold text-charcoal-950">Klient</h4>
+                                <p class="text-[10px] text-charcoal-800 font-light">Návštěva webu &amp; odeslání šifrovaného formuláře z mobilu</p>
+                            </div>
+                            <div class="text-[10px] font-bold text-sage-600 uppercase tracking-widest text-right">TLS 1.3<br><span class="text-charcoal-400 font-light normal-case">WAF chráněno</span></div>
+                        </div>
+
+                        <div class="flex flex-col items-center">
+                            <span class="text-sage-500 font-bold">↓</span>
+                        </div>
+
+                        <div class="flex items-center gap-4 bg-sage-50 p-4 rounded-2xl border border-sage-200">
+                            <div class="w-10 h-10 flex-shrink-0 bg-white rounded-full border border-sage-300 flex items-center justify-center text-lg">☁️</div>
+                            <div class="flex-1">
+                                <h4 class="text-xs font-bold text-charcoal-950">Cloudflare Pages &amp; Workers API</h4>
+                                <p class="text-[10px] text-charcoal-800 font-light">Globální distribuce UI a router backendových služeb</p>
+                            </div>
+                            <div class="text-[10px] font-bold text-sage-600 uppercase tracking-widest text-right">Edge<br><span class="text-charcoal-400 font-light normal-case">Latency &lt;50ms</span></div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4 pt-4 border-t border-alabaster-200">
+                            <div class="bg-alabaster-100 p-4 rounded-xl border border-alabaster-300 text-center">
+                                <div class="text-xl mb-2">💾</div>
+                                <h4 class="text-[10px] font-bold text-charcoal-950 uppercase tracking-widest">D1 (SQL)</h4>
+                                <p class="text-[9px] text-charcoal-800 font-light mt-1">Ukládání šifrovaných dat rezervací (AES-GCM)</p>
+                            </div>
+                            <div class="bg-alabaster-100 p-4 rounded-xl border border-alabaster-300 text-center">
+                                <div class="text-xl mb-2">🖼️</div>
+                                <h4 class="text-[10px] font-bold text-charcoal-950 uppercase tracking-widest">R2 (Blob)</h4>
+                                <p class="text-[9px] text-charcoal-800 font-light mt-1">S3 kompatibilní ukládání fotek a streamování videa</p>
+                            </div>
+                            <div class="bg-alabaster-100 p-4 rounded-xl border border-alabaster-300 text-center">
+                                <div class="text-xl mb-2">🤖</div>
+                                <h4 class="text-[10px] font-bold text-charcoal-950 uppercase tracking-widest">Workers AI</h4>
+                                <p class="text-[9px] text-charcoal-800 font-light mt-1">LLM inference (Llama 3) pro asistentku a texty</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center">
+                            <span class="text-sage-500 font-bold">↓</span>
+                        </div>
+
+                        <div class="flex items-center gap-4 bg-gold-50 p-4 rounded-2xl border border-gold-200">
+                            <div class="w-10 h-10 flex-shrink-0 bg-white rounded-full border border-gold-300 flex items-center justify-center text-lg">🔌</div>
+                            <div class="flex-1">
+                                <h4 class="text-xs font-bold text-charcoal-950">Externí Integrace</h4>
+                                <p class="text-[10px] text-charcoal-800 font-light">Google Calendar API (Termíny), Resend API (Maily), Meta Graph API (Insta Sync)</p>
+                            </div>
+                            <div class="text-[10px] font-bold text-gold-600 uppercase tracking-widest text-right">OAuth2<br><span class="text-charcoal-400 font-light normal-case">Webhooks</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-sage-900 text-alabaster-100 rounded-3xl p-8 shadow-premium flex flex-col justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-gold-500 block mb-2">Security Blueprint</span>
+                        <h3 class="font-serif text-2xl font-light mb-6 text-white leading-snug">Zabezpečení zdravotních údajů</h3>
+                        <p class="text-xs text-sage-100 leading-relaxed font-light mb-6">
+                            Poptávky terapií (alergie, závislosti) podléhají čl. 9 GDPR (údaje o zdraví). Veškerá data o potížích klienta jsou před uložením do D1 zašifrována přes Web Crypto API na úrovni sloupce (Field-Level Encryption).
+                        </p>
+                        <p class="text-xs text-sage-100 leading-relaxed font-light mb-6">
+                            API tokeny pro Google Calendar a Meta Graph API nejsou součástí GitHub repozitáře, ale žijí výhradně v izolovaném trezoru *Cloudflare Secrets*.
+                        </p>
+                    </div>
+                    <div class="border-t border-sage-750 pt-4 text-center">
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-gold-500">AES-GCM (256-bit) Aktivní</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-simulator" class="page-transition hidden">
+            <div class="text-left max-w-3xl mb-12">
+                <h2 class="font-serif text-3xl md:text-4xl font-light text-charcoal-950 mb-4">Administrační AI a Marketingový uzel</h2>
+                <p class="text-sm text-charcoal-800 leading-relaxed font-light">
+                    Interaktivní simulátor administračního rozhraní. Zobrazuje plynulost bezúdržbové správy webu paní Lenkou Limpouchovou pomocí integrované AI Llama-3 běžící přímo na okraji sítě.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+                
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white p-8 rounded-3xl shadow-premium border border-alabaster-300/40">
+                        <h3 class="font-serif text-xl font-bold text-charcoal-950 mb-6">Metriky Ekosystému</h3>
+                        <div class="space-y-5 text-xs text-charcoal-800">
+                            <div class="flex justify-between items-center border-b border-alabaster-200 pb-3">
+                                <span class="text-charcoal-800 font-light">Aktivní žádosti k vyřízení:</span>
+                                <span class="font-bold text-charcoal-950 text-base" id="live-total-bookings">1</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-alabaster-200 pb-3">
+                                <span class="text-charcoal-800 font-light">Newsletter databáze (D1):</span>
+                                <span class="font-bold text-charcoal-950 text-base" id="live-total-newsletters">124</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-1">
+                                <span class="text-charcoal-800 font-light">Instagram Meta Graph Sync:</span>
+                                <span class="text-sage-600 font-bold uppercase tracking-widest text-[9px] bg-sage-100 px-2 py-1 rounded">Aktuální</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-sage-700 to-sage-600 text-white p-8 rounded-3xl shadow-premium">
+                        <h3 class="font-serif text-2xl font-bold mb-4 flex items-center gap-2">
+                            <span class="text-gold-500">✦</span> AI Copywriter
+                        </h3>
+                        <p class="text-xs text-sage-100 mb-6 leading-relaxed font-light">
+                            Vložte surové poznámky nebo hlasový přepis ze sezení (přes klávesnici mobilu). Generativní model (@cf/meta/llama-3-8b-instruct) z nich vytvoří sémanticky optimalizovaný článek v tónu "Quiet Luxury".
+                        </p>
+                        <div class="space-y-4">
+                            <textarea id="ai-input-notes" placeholder="Příklad: dnes pán 50 let ze Strakonic, bolesti zad z fabriky, dělali jsme terapii páteře, prý velká úleva. Doporučila jsem víc pít." class="w-full h-28 bg-white/10 text-white placeholder-white/40 border border-white/20 rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-gold-500 font-light"></textarea>
+                            <button onclick="triggerAICopywriter()" class="w-full bg-gold-500 hover:bg-gold-600 text-charcoal-950 font-bold py-4 rounded-xl text-xs uppercase tracking-widest transition shadow-lg">
+                                Vygenerovat článek
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 space-y-8">
+                    <div class="bg-white p-8 rounded-3xl shadow-premium border border-alabaster-300/40">
+                        <h3 class="font-serif text-2xl font-light text-charcoal-950 mb-6">Poptávky Termínů (SQL D1 Storage)</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-alabaster-300 text-[10px] uppercase tracking-wider text-stone-400">
+                                        <th class="pb-3 font-medium">Klient &amp; Kontakt</th>
+                                        <th class="pb-3 font-medium">Požadavek</th>
+                                        <th class="pb-3 font-medium text-right">Potvrzení (G.Calendar)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs divide-y divide-alabaster-200" id="admin-bookings-table">
+                                    <tr id="booking-row-1">
+                                        <td class="py-4">
+                                            <p class="font-bold text-sm text-charcoal-950">Martina Hrušková</p>
+                                            <p class="text-charcoal-800 font-light text-[11px] mt-1">+420 608 123 456</p>
+                                        </td>
+                                        <td class="py-4 text-charcoal-800 font-light">Alergie u dětí <br><span class="text-[9px] text-stone-400">Poptáváno: 26.05.</span></td>
+                                        <td class="py-4 text-right flex justify-end gap-3 items-center pt-5">
+                                            <button onclick="approveBooking('booking-row-1')" class="bg-sage-100 text-sage-800 w-8 h-8 rounded-full flex items-center justify-center hover:bg-sage-200 transition font-bold" title="Zapsat do Google Kalendáře">
+                                                ✔
+                                            </button>
+                                            <button onclick="rejectBooking('booking-row-1')" class="bg-red-50 text-red-800 w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-100 transition font-bold" title="Smazat z DB">
+                                                ✖
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="ai-copywriter-output-card" class="hidden bg-alabaster-100 p-8 rounded-3xl border border-gold-500/30 shadow-premium transition-all duration-500">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                            <h4 class="font-serif text-xl font-bold text-sage-800 flex items-center gap-2"><span class="text-gold-500">✦</span> Výstup AI Copywritera</h4>
+                            <button onclick="publishArticle()" class="bg-sage-500 hover:bg-sage-600 text-white px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition shadow-sm">
+                                Publikovat na Blog
+                            </button>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-inner text-xs text-charcoal-800 space-y-4 border border-alabaster-200">
+                            <p class="font-serif font-bold text-lg text-charcoal-950" id="generated-article-title">Načítání generativního modelu...</p>
+                            <div id="generated-article-body" class="font-light leading-relaxed space-y-3">Odesílám dotaz na okraj sítě (Workers AI)...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-charcoal-950 text-alabaster-100/60 py-16 border-t border-charcoal-900 mt-12">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 text-center lg:text-left">
+            <div class="flex flex-col lg:flex-row justify-between items-center gap-6 text-xs uppercase tracking-widest font-medium">
+                <p>&copy; 2026 Meverik Studio &bull; Bicom Písek. Všechna práva vyhrazena.</p>
+                <div class="flex gap-8">
+                    <span>Edge-First Data Architecture</span>
+                    <span>Zero-Cost Serverless Prototype</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Explicit Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in this output. -->
+
+    <script>
+        let geoChartInstance = null;
+        let industryChartInstance = null;
+        let nicotineChartInstance = null;
+        let sicknessChartInstance = null;
+
+        function showToastNotification(text) {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            toastText.innerText = text;
+            toast.classList.remove('translate-y-[-100px]', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-100px]', 'opacity-0');
+            }, 3000);
+        }
+
+        function switchTab(tabId) {
+            const pages = ['concept', 'data', 'competitors', 'psychology', 'architecture', 'simulator'];
+            
+            pages.forEach(p => {
+                const pageEl = document.getElementById(`page-${p}`);
+                const tabEl = document.getElementById(`tab-${p}`);
+                
+                if (p === tabId) {
+                    pageEl.classList.remove('hidden');
+                    pageEl.classList.add('block');
+                    if (tabEl) tabEl.classList.add('tab-active');
+                } else {
+                    pageEl.classList.remove('block');
+                    pageEl.classList.add('hidden');
+                    if (tabEl) tabEl.classList.remove('tab-active');
+                }
+            });
+
+            if (tabId === 'data') {
+                renderCharts();
+            }
+        }
+
+        const wrapLabel = (label) => {
+            if (label.length <= 16) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = '';
+            words.forEach(word => {
+                if ((currentLine + word).length > 16) {
+                    if (currentLine) lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine += word + ' ';
+                }
+            });
+            if (currentLine) lines.push(currentLine.trim());
+            return lines;
+        };
+
+        const chartTooltipConfig = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) {
+                        return label.join(' ');
+                    } else {
+                        return label;
+                    }
+                }
+            }
+        };
+
+        function renderCharts() {
+            if (geoChartInstance) geoChartInstance.destroy();
+            if (industryChartInstance) industryChartInstance.destroy();
+            if (nicotineChartInstance) nicotineChartInstance.destroy();
+            if (sicknessChartInstance) sicknessChartInstance.destroy();
+
+            const ctxGeo = document.getElementById('geoChart').getContext('2d');
+            const geoLabels = ['Písek', 'Strakonice', 'Milevsko', 'Vodňany', 'Blatná', 'Protivín'].map(wrapLabel);
+            geoChartInstance = new Chart(ctxGeo, {
+                type: 'bar',
+                data: {
+                    labels: geoLabels,
+                    datasets: [{
+                        label: 'Populace v tisících',
+                        data: [29.4, 22.4, 8.0, 7.4, 6.5, 5.0],
+                        backgroundColor: '#738A75',
+                        borderRadius: 4,
+                        hoverBackgroundColor: '#5F7361'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: chartTooltipConfig
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#EAEFEA' }, ticks: { font: { family: 'Montserrat' } } },
+                        x: { grid: { display: false }, ticks: { font: { family: 'Montserrat' } } }
+                    }
+                }
+            });
+
+            const ctxIndustry = document.getElementById('industryChart').getContext('2d');
+            const industryLabels = ['ČZ Strakonice', 'Dura Blatná', 'Vodňanská drůbež', 'AISIN Písek', 'ZVVZ Milevsko', 'Faurecia Písek'].map(wrapLabel);
+            industryChartInstance = new Chart(ctxIndustry, {
+                type: 'bar',
+                data: {
+                    labels: industryLabels,
+                    datasets: [{
+                        label: 'Počet zaměstnanců',
+                        data: [2000, 2000, 1000, 831, 800, 500],
+                        backgroundColor: '#C5A880',
+                        borderRadius: 4,
+                        hoverBackgroundColor: '#B2946C'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: chartTooltipConfig
+                    },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: '#EAEFEA' }, ticks: { font: { family: 'Montserrat' } } },
+                        y: { grid: { display: false }, ticks: { font: { family: 'Montserrat' } } }
+                    }
+                }
+            });
+
+            const ctxNicotine = document.getElementById('nicotineChart').getContext('2d');
+            const nicotineLabels = ['Klasické cigarety', 'E-cigarety / Vaping', 'Zahřívaný tabák', 'Nikotinové sáčky'].map(wrapLabel);
+            nicotineChartInstance = new Chart(ctxNicotine, {
+                type: 'bar',
+                data: {
+                    labels: nicotineLabels,
+                    datasets: [
+                        {
+                            label: 'Celá populace (15+)',
+                            data: [22.4, 13.9, 5.3, 4.9],
+                            backgroundColor: '#E6DFD5',
+                            borderRadius: 3
+                        },
+                        {
+                            label: 'Mládež (15-24 let)',
+                            data: [27.1, 25.3, 9.5, 15.4],
+                            backgroundColor: '#738A75',
+                            borderRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: 'Montserrat', size: 11 } } },
+                        tooltip: chartTooltipConfig
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#EAEFEA' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            const ctxSickness = document.getElementById('sicknessChart').getContext('2d');
+            const sicknessLabels = ['Respirační', 'Pohybový aparát', 'Duševní poruchy (V)', 'Novotvary'].map(wrapLabel);
+            sicknessChartInstance = new Chart(ctxSickness, {
+                type: 'polarArea',
+                data: {
+                    labels: sicknessLabels,
+                    datasets: [{
+                        data: [15.6, 45.0, 94.9, 128.8],
+                        backgroundColor: [
+                            'rgba(115, 138, 117, 0.7)',
+                            'rgba(197, 168, 128, 0.7)',
+                            'rgba(95, 115, 97, 0.7)',
+                            'rgba(221, 213, 199, 0.7)'
+                        ],
+                        borderWidth: 1,
+                        borderColor: '#FAF8F5'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: 'Montserrat', size: 10 } } },
+                        tooltip: chartTooltipConfig
+                    },
+                    scales: {
+                        r: {
+                            ticks: { display: false },
+                            grid: { color: '#EAEFEA' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function copyXmlCode() {
+            const code = document.getElementById('xml-code-block').innerText;
+            const tempInput = document.createElement('textarea');
+            tempInput.value = code;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToastNotification("XML kód zkopírován do schránky");
+        }
+
+        function approveBooking(rowId) {
+            const row = document.getElementById(rowId);
+            row.style.opacity = '0.3';
+            setTimeout(() => {
+                row.remove();
+                document.getElementById('live-total-bookings').innerText = '0';
+                showToastNotification("Zapsáno: Událost vytvořena v Google Kalendáři");
+            }, 500);
+        }
+
+        function rejectBooking(rowId) {
+            const row = document.getElementById(rowId);
+            row.style.opacity = '0.3';
+            setTimeout(() => {
+                row.remove();
+                document.getElementById('live-total-bookings').innerText = '0';
+                showToastNotification("Odstraněno: Záznam smazán z D1 databáze");
+            }, 500);
+        }
+
+        function triggerAICopywriter() {
+            const notes = document.getElementById('ai-input-notes').value.trim();
+            if (!notes) {
+                showToastNotification("Zadejte prosím hlasové poznámky");
+                return;
+            }
+
+            const outputCard = document.getElementById('ai-copywriter-output-card');
+            outputCard.classList.remove('hidden');
+
+            document.getElementById('generated-article-title').innerText = "AI analyzuje a strukturuje poznámky...";
+            document.getElementById('generated-article-body').innerHTML = "Spouštím Cloudflare Workers AI model (@cf/meta/llama-3-8b-instruct) na Edge uzlu...<br><br>Aplikuji Sémantická pravidla: Quiet Luxury tone, Písek lokalizace...";
+
+            setTimeout(() => {
+                document.getElementById('generated-article-title').innerText = "Úleva od bolestí zad: Cesta k znovuzískání energie";
+                document.getElementById('generated-article-body').innerHTML = "<p class='mb-2'>Dnes nás v naší písecké ordinaci navštívil klient s dlouhodobými potížemi pohybového aparátu, způsobenými náročným pracovním stresem a fyzickou zátěží v místním průmyslu.</p><p class='mb-2'>Prostřednictvím hluboké, neinvazivní harmonizace na přístroji Bicom Optima se nám podařilo uvolnit zablokované energetické dráhy podél páteře. Klient ihned pociťoval výraznou fyzickou i psychickou úlevu.</p><p class='text-sage-700 italic'>Doporučení naší ordinace: Po uvolnění tkání je zcela zásadní podpořit tělo dostatkem čisté, neperlivé vody pro snazší odplavení uvolněných zátěží z těla ven.</p>";
+                showToastNotification("Článek vygenerován Llama 3 modelem");
+            }, 2500);
+        }
+
+        function publishArticle() {
+            showToastNotification("Článek byl úspěšně synchronizován a publikován pro indexaci (GEO)!");
+            document.getElementById('ai-copywriter-output-card').classList.add('hidden');
+            document.getElementById('ai-input-notes').value = '';
+        }
+    </script>
+</body>
+<!-- Explicit Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in this output. -->
+</html>
