@@ -809,3 +809,39 @@
 - [x] Proveden self-merge dokumentace a úklid větve `docs/adr-001`
 - [x] Záznam zapsán do WORK-DIARY.md
 
+---
+
+## 2026-06-04 S1 — Test Resendu — Fáze A: Čistá diagnóza
+**Model:** Antigravity (Gemini 2.5 Pro)
+**Branch:** agent/ag-w3-s1-resend-diagnose
+**Status:** ✅ Diagnostika dokončena (Čeká na review)
+
+### Co bylo zjištěno
+- **1. Existence secretů (3/3):**
+  - **CF Pages (`bicom-pisek`):** **ANO** (ověřeno přes `wrangler pages secret list`).
+  - **booking-consumer (`bicom-booking-consumer`):** **ANO** (ověřeno přes `wrangler secret list`).
+  - **cron-worker (`bicom-cron-worker`):** **ANO** (ověřeno přes `wrangler secret list`).
+  *Všechny tři platformy mají správně přiřazený `SECRET_RESEND_API_KEY`.*
+- **2. Stav odesílací domény (DNS audit):**
+  - DKIM (`resend1._domainkey.bicom-pisek.cz` atd.): **CHYBÍ** (dig vrací prázdný výsledek).
+  - SPF pro Resend (`spf.resend.com`): **CHYBÍ** (v TXT záznamu je pouze Google verification).
+  - CNAME pro bounce (`send.bicom-pisek.cz`): **CHYBÍ**.
+  *Závěr:* Doména `bicom-pisek.cz` v Resendu **není ověřená (verified)** a doručování transakčních e-mailů by momentálně selhalo s chybou 403 (odmítnuto ze strany Resendu).
+- **3. FROM adresa a Reply-To:**
+  - V `resend.js` je natvrdo definovaná FROM adresa: `Bicom Písek <info@bicom-pisek.cz>`.
+  - **Reply-To není nakonfigurován** (v odesílacím JSON těle se nepředává).
+- **4. Integrace a Error Handling:**
+  - Konektor volá reálné Resend API (`https://api.resend.com/emails`) pomocí helperu `fetchWithRetry` (podporuje retry a exponenciální backoff).
+  - Pokud klíč chybí, konektor vrací `null`. Při chybě API vrátí `null` a zaloguje chybový stav (např. 403). Žádný záložní kanál (fallback) pro případ selhání Resendu implementován není.
+
+### Úklid
+- Zbytková větev `fix/s1-adresa` byla úspěšně smazána z `upstream` repozitáře (`origin` i lokální verze již byly uklizeny dříve).
+
+### Akceptační kritéria — splněno?
+- [x] Ověřena existence SECRET_RESEND_API_KEY na 3/3 místech na Cloudflare
+- [x] Zkontrolován stav domény přes DNS (dig na SPF, DKIM a bounce CNAME)
+- [x] Analyzována FROM a Reply-To konfigurace v resend.js
+- [x] Prověřena integrace a chybové stavy v resend.js
+- [x] Smazána větev fix/s1-adresa z upstreamu
+- [x] Záznam zapsán do WORK-DIARY.md
+
