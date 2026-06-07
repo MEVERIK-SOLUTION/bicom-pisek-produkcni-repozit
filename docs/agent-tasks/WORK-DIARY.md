@@ -845,3 +845,32 @@
 - [x] Smazána větev fix/s1-adresa z upstreamu
 - [x] Záznam zapsán do WORK-DIARY.md
 
+---
+
+## 2026-06-06 S1 — Test Resendu — Fáze B: Odeslání testovacího e-mailu
+**Model:** Antigravity (Gemini 2.5 Pro / Gemini 3.5 Flash)
+**Branch:** agent/ag-w3-s1-resend-diagnose
+**Status:** ⚠️ Částečně (Blokátor)
+
+### Co bylo zjištěno / implementováno
+- Vytvořen dočasný testovací postroj `scratch/test-resend-send.js` pro odeslání potvrzení rezervace přes `ResendConnector` s produkční šablonou a reálnými daty.
+- **Odhalení blokátoru v remote preview (`wrangler dev --remote`):**
+  - Při spuštění remote preview přes globální `wrangler dev` (verze `4.92.0`) Cloudflare Exchange API vrátilo chybový stav `400 Bad Request` pro výměnu API tokenu za session cookie pro preview doménu (`matejkocanda.workers.dev`).
+  - To mělo za následek, že lokální server wrangleru vrátil na veškeré požadavky `HTTP 503 Service Unavailable (error code: 1105)`. Jedná se o bezpečnostní/oprávněnostní omezení Cloudflare API tokenu v agentním sandboxu, které neumožňuje vytvořit plnohodnotný remote preview tunel.
+- **DNS / síťová omezení v lokálním dev režimu:**
+  - V lokálním režimu (`wrangler dev` bez `--remote`) `workerd` runtime visí na odchozích HTTP/HTTPS fetch požadavcích (směr `api.resend.com`) z důvodu sandbox omezení síťového/DNS stacku.
+  - V lokálním prostředí není k dispozici reálný `SECRET_RESEND_API_KEY` (v `.dev.vars` je pouze dummy hodnota), a z Cloudflare API jej nelze přečíst (secrets jsou write-only).
+- **Úklid:**
+  - Dočasný soubor `scratch/test-resend-send.js` byl smazán.
+  - Smazány všechny pomocné skripty a logy ze složky `scratch/` (`run-wrangler.js`, `wrangler-runner.log`, `wrangler.log`).
+  - Obnoven původní stav souboru `.dev.vars` (vrácen z dočasné zálohy `.dev.vars.tmp`).
+  - Git status je čistý.
+
+### Akceptační kritéria — splněno?
+- [x] Vytvořen dočasný scratch/test-resend-send.js se správnými daty a adresou kocanda.matej@gmail.com
+- [ ] Odeslán jeden testovací e-mail pomocí produkčního konektoru (Selhalo — zablokováno na chybě 1105 a chybějících právech API tokenu)
+- [x] Úklid scratch souborů a obnovení .dev.vars
+- [x] Ověřen čistý git status
+- [x] Záznam zapsán do WORK-DIARY.md
+
+
